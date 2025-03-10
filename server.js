@@ -14,7 +14,9 @@ app.use("/persons",personRoutes);
 app.use("/menu",menuRoutes)
 
  
-
+app.get("/homePage",(req,res)=>{
+  res.send("hey");
+})
 
 
 
