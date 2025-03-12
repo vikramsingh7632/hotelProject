@@ -11,7 +11,10 @@ Router.get("/findPerson", async (req, res) => {
     limit = parseInt(limit);
     const skip = (page - 1) * limit;
 
-    const data = await model.person.find({isDeleted:false}).skip(skip).limit(limit);
+    const data = await model.person
+      .find({ isDeleted: false })
+      .skip(skip)
+      .limit(limit);
     const totalUsers = await model.person.countDocuments();
     console.log("data fetched");
 
