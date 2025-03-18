@@ -33,10 +33,10 @@ const personSchema = new mongoose.Schema(
     },
 
     isDeleted: {
-      type: String,
+      type: Boolean,
       default: false,
     },
-    deletedAt: { type : Date}
+    deletedAt: { type: Date },
   },
 
   { timestamps: true }

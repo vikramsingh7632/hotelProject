@@ -4,29 +4,73 @@ const Router = express.Router();
 const model = require("./../models");
 const moment = require("moments");
 
+// Router.get("/findPerson", async (req, res) => {
+//   try {
+//     let { page, limit } = req.query;
+//     page = parseInt(page);
+//     limit = parseInt(limit);
+//     const skip = (page - 1) * limit;
+
+//     const data = await model.person
+//       .find({ isDeleted: false })
+//       .skip(skip)
+//       .limit(limit);
+//     const totalUsers = await model.person.countDocuments();
+//     console.log("data fetched");
+
+//     res.json({
+//       totalUsers,
+//       page,
+//       totalPages: Math.ceil(totalUsers / limit),
+//       data,
+//     });
+//   } catch (err) {
+//     console.log(err);
+//     res.status(500).json({ error: "internal error" });
+//   }
+// });
+
 Router.get("/findPerson", async (req, res) => {
   try {
-    let { page, limit } = req.query;
-    page = parseInt(page);
-    limit = parseInt(limit);
+    let { page = 1, limit = 10 } = req.query;
+    page = parseInt(page) || 1;
+    limit = parseInt(limit) || 10;
     const skip = (page - 1) * limit;
 
-    const data = await model.person
-      .find({ isDeleted: false })
-      .skip(skip)
-      .limit(limit);
-    const totalUsers = await model.person.countDocuments();
-    console.log("data fetched");
+    const aggregatePipeline = [
+      { $match: { isDeleted: false } },
+      {
+        $project: {
+          name: 1,
+          email: 1,
+          createdAt: 1,
+        },
+      },
+      {
+        $sort: { createdAt: -1 },
+      },
+      {
+        $skip: skip,
+      },
+      {
+        $limit: limit,
+      },
+    ];
+
+    console.log("aggregatePipeline: ", JSON.stringify(aggregatePipeline));
+    const users = await model.person.aggregate(aggregatePipeline);
+
+    const totalUsers = await model.person.countDocuments({ isDeleted: false });
 
     res.json({
       totalUsers,
       page,
       totalPages: Math.ceil(totalUsers / limit),
-      data,
+      users,
     });
-  } catch (err) {
-    console.log(err);
-    res.status(500).json({ error: "internal error" });
+  } catch (error) {
+    console.error("Error:", error);
+    res.status(500).json({ error: "Internal Server Error" });
   }
 });
 
