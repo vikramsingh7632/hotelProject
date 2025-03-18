@@ -1,6 +1,7 @@
-const express = require("express");
+const express = require("express")
 const app = express();
 const db = require("./db");
+
 
 app.use(express.json());
 let port = 3000;
@@ -9,16 +10,20 @@ const model = require("./models/index");
 const personRoutes = require("./routes/person");
 const menuRoutes = require("./routes/menu");
 const productRoutes = require("./routes/product");
-const addRoutes = require("./routes/address");
+const addRoutes = require("./routes/address")
 
-app.use("/persons", personRoutes);
-app.use("/menu", menuRoutes);
-app.use("/product", productRoutes);
-app.use("/address", addRoutes);
 
-app.get("/homePage", (req, res) => {
+app.use("/persons",personRoutes);
+app.use("/menu",menuRoutes),
+app.use("/product",productRoutes),
+app.use("/address",addRoutes)
+
+ 
+app.get("/homePage",(req,res)=>{
   res.send("hey");
-});
+})
+
+
 
 app.listen(port, () => {
   console.log("my server is ready", port);

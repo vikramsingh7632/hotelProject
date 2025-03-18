@@ -12,11 +12,15 @@ Router.post("/createAddress", async (req, res) => {
     const response = await newAddress.save();
     console.log("Data saved successfully");
     res.status(201).json(response);
+    console.log('response: ', response); 
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: "Internal Server Error" });
   }
 });
+
+
+
 
 Router.get("/listing", async (req, res) => {
   try {
@@ -67,6 +71,8 @@ Router.get("/listing", async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 });
+
+
 
 Router.get("/addressByuser/:id", async (req, res) => {
   try {

@@ -22,9 +22,9 @@ Router.get("/findMenu", async (req, res) => {
     let { page, limit } = req.query;
      console.log('limit: ', limit);
     
-    // page = parseInt(page);
-    // limit = parseInt(limit);
-    // console.log('limit: ', limit);
+    page = parseInt(page);
+    limit = parseInt(limit);
+    console.log('limit: ', limit);
     const skip = (page - 1) * limit;
 
     const data = await menuItem.find().skip(skip).limit(limit);
