@@ -212,38 +212,20 @@ Router.delete("/deletedUserCount", async (req, res) => {
   }
 });
 
-// Router.get("/dashboard", async (req, res) => {
-//   try {
-//     let startOfDay = new Date();
-//     startOfDay.setHours(0, 0, 0, 0);
-
-//     let endOfDay = new Date();
-//     endOfDay.setHours(23, 59, 59, 999);
-//     const today = new Date();
-//     const firstweek = new Date(today.setDate(today.getDate() - today.getDay()));
-//     let dashboardCount = await model.person.countDocuments({
-//       createdAt: { $gte: startOfDay, $lte: endOfDay },
-//     });
-
-//     UserCount = await model.person.countDocuments({
-//       createdAt: { $gte: firstweek },
-//     });
-//     res.status(200).json({ success: true, data: dashboardCount, UserCount });
-//   } catch (error) {
-//     console.log("error: ", error);
-//     res.status(500).json({ success: false, message: error.message });
-//   }
-// });
-
 Router.get("/dashboard", async (req, res) => {
   try {
     let sumField = null;
+
     const startOfWeek = Moment().startOf("week").toDate();
     const endOfWeek = Moment().endOf("week").toDate();
+
     const startOfMonth = Moment().startOf("month").toDate();
     const endOfMonth = Moment().endOf("month").toDate();
-    const userData = {};
 
+    const startOfYear = Moment().startOf("year").toDate();
+    const endOfYear = Moment().endOf("year").toDate();
+
+    const userData = {};
     if (req.query.type === "daily") {
       const pipeline = [
         { $match: { createdAt: { $gte: startOfWeek, $lte: endOfWeek } } },
@@ -257,7 +239,6 @@ Router.get("/dashboard", async (req, res) => {
         { $sort: { _id: 1 } },
       ];
       const userCounts = await model.person.aggregate(pipeline);
-
       for (let i = 0; i < 7; i++) {
         const date = Moment(startOfWeek).add(i, "days");
         userData[date.format("YYYY-MM-DD")] = {
@@ -265,14 +246,12 @@ Router.get("/dashboard", async (req, res) => {
           count: 0,
         };
       }
-
       userCounts.forEach(({ _id, count }) => {
         if (userData[_id]) {
           userData[_id].count = count;
         }
       });
     }
-
     if (req.query.type === "weekly") {
       const pipe = [
         { $match: { createdAt: { $gte: startOfMonth, $lte: endOfMonth } } },
@@ -285,21 +264,75 @@ Router.get("/dashboard", async (req, res) => {
         { $sort: { _id: 1 } },
       ];
       const userCounts = await model.person.aggregate(pipe);
-
-      const totalWeeks = Math.ceil(Moment(endOfMonth).date() / 7); // Get total weeks in the month
+      const totalWeeks = Math.ceil(Moment(endOfMonth).date() / 7);
       for (let i = 1; i <= totalWeeks; i++) {
         userData[i] = { name: `Week ${i}`, count: 0 };
       }
-
       userCounts.forEach(({ _id, count }) => {
-        const weekNum = Math.ceil(Moment(_id).date() / 7); // Calculate week number
+        const weekNum = Math.ceil(Moment(_id).date() / 7);
         if (userData[weekNum]) {
           userData[weekNum].count += count;
         }
       });
     }
+    if (req.query.type === "months") {
+      const pipelineOfData = [
+        { $match: { createdAt: { $gte: startOfYear, $lte: endOfYear } } },
+        {
+          $group: {
+            _id: { $dateToString: { format: "%Y-%m", date: "$createdAt" } },
+            count: sumField ? { $sum: `$${sumField}` } : { $sum: 1 },
+          },
+        },
+        { $sort: { _id: 1 } },
+      ];
+      const userCounts = await model.person.aggregate(pipelineOfData);
 
-    // return Object.values(userData);
+      const totalMonths = 12;
+
+      for (let i = 1; i <= totalMonths; i++) {
+        userData[i] = {
+          name: Moment()
+            .month(i - 1)
+            .format("MMMM"),
+          count: 0,
+        };
+      }
+
+      userCounts.forEach(({ _id, count }) => {
+        const monthNum = Moment(_id, "YYYY-MM").month() + 1;
+        if (userData[monthNum]) {
+          userData[monthNum].count += count;
+        }
+      });
+    }
+
+    if (req.query.type === "years") {
+      const pipeline = [
+        { $match: { createdAt: { $exists: true } } },
+        {
+          $group: {
+            _id: { $year: "$createdAt" },
+
+            count: sumField ? { $sum: `$${sumField}` } : { $sum: 1 },
+          },
+        },
+        { $sort: { _id: 1 } },
+      ];
+      const userCounts = await model.person.aggregate(pipeline);
+      const backYear = 5;
+      const currentYear = Moment().year();
+      for (let i = 0; i < backYear; i++) {
+        const year = currentYear - i;
+        userData[year] = { name: `${year}`, count: 0 };
+      }
+      userCounts.forEach(({ _id, count }) => {
+        if (userData[_id]) {
+          userData[_id].count = count;
+        }
+      });
+    }
+
     res.status(200).json({ success: true, data: Object.values(userData) });
   } catch (error) {
     console.log("error: ", error);
