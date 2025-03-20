@@ -3,7 +3,7 @@ const model = require("./../models");
  async function createAddress (req, res)  {
   try {
     const data = req.body;
-    const newAddress = new address(data);
+    const newAddress = new model.address(data);
     const response = await newAddress.save();
     console.log("Data saved successfully");
     res.status(201).json(response);
@@ -19,7 +19,7 @@ async function listing (req, res){
       let limit = parseInt(req.query.limit) 
       let skip = (page - 1) * limit;
   
-      const aggree = await Address.aggregate([
+      const aggree = await model.address.aggregate([
         { $match: { isDeleted: false } },
   
         {
@@ -49,7 +49,7 @@ async function listing (req, res){
         { $limit: limit },
       ]);
   
-      const totalCount = await Address.countDocuments({ isDeleted: false });
+      const totalCount = await model.address.countDocuments({ isDeleted: false });
   
       res.json({
         totalRecords: totalCount,

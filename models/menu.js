@@ -1,29 +1,38 @@
 const mongoose = require("mongoose");
 
-const menuSchema = new mongoose.Schema({
-  name: {
-    type: String,
-    required: true,
+const menuSchema = new mongoose.Schema(
+  {
+    name: {
+      type: String,
+      required: true,
+    },
+    price: {
+      type: Number,
+      required: true,
+    },
+    taste: {
+      type: String,
+      enum: ["sweet", "spicy", "sour"],
+      required: true,
+    },
+    is_drink: {
+      type: Boolean,
+      default: "",
+    },
+
+    num_sales: {
+      type: Number,
+      default: 0,
+    },
+    isDeleted: {
+      type: Boolean,
+      default: false,
+    },
+    deletedAt: { type: Date },
   },
-  price: {
-    type: Number,
-    required: true,
-  },
-  taste: {
-    type: String,
-    enum: ["sweet", "spicy", "sour"],
-    required: true,
-  },
-  is_drink: {
-    type: Boolean,
-    default: "",
-  },
-  
-  num_sales: {
-    type: Number,
-    default: 0,
-  },
-});
+
+  { timestamps: true }
+);
 
 const menuItem = mongoose.model("menuItem", menuSchema);
 module.exports = menuItem;
