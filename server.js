@@ -1,27 +1,13 @@
 const express = require("express")
 const app = express();
 const db = require("./db");
+const routes = require("./routes")
+let port = 3000;
 
 
 app.use(express.json());
-let port = 3000;
-const model = require("./models/index");
+app.use("/api", routes);
 
-const personRoutes = require("./routes/person");
-const menuRoutes = require("./routes/menu");
-const productRoutes = require("./routes/product");
-const addRoutes = require("./routes/address")
-
-
-app.use("/persons",personRoutes);
-app.use("/menu",menuRoutes),
-app.use("/product",productRoutes),
-app.use("/address",addRoutes)
-
- 
-app.get("/homePage",(req,res)=>{
-  res.send("hey");
-})
 
 
 
